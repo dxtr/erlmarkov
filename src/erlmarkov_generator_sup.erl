@@ -1,28 +1,24 @@
 -module(erlmarkov_generator_sup).
 -behaviour(supervisor).
--export([start_link/0, start_child/1, init/1]).
+-export([start_link/0, start_child/0, init/1]).
 -define(SERVER, ?MODULE).
 
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 init([]) ->
-    RestartStrategy = simple_one_for_one,
-    MaxRestarts = 100,
-    MaxSecondsBetweenRestarts = 300,
-    SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    SupFlags = #{strategy => one_for_one,
+		intensity => 100,
+		period => 300},
 
-    Restart = permanent,
-    Shutdown = 2000,
-    Type = worker,
     Children = [#{id => erlmarkov_generator,
 	       start => {erlmarkov_generator, start_link, []},
-	       restart => Restart,
-	       shutdown => Shutdown,
-	       type => Type}],
+	       restart => permanent,
+	       shutdown => 5000,
+	       type => worker}],
     Result = {SupFlags, Children},
-    
+    io:format("Started ~p (~p)~n", [?MODULE, self()]),
     {ok, Result}.
 
-start_child(Word) when is_atom(Word) ->
-    supervisor:start_child(?SERVER, [Word]).
+start_child() ->
+    supervisor:start_child(?SERVER, []).

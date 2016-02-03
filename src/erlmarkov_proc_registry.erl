@@ -65,6 +65,9 @@ handle_call({unregister, Name}, {Pid, _Tag}, State) ->
 handle_call({whereis, Name}, _From, State) ->
     Reply = maps:get(Name, State, undefined),
     {reply, Reply, State};
+handle_call({count_proc}, _From, State) ->
+    Reply = length(maps:keys(State)),
+    {reply, Reply, State};
 handle_call({dump_state}, _From, State) ->
     Reply = State,
     {reply, Reply, State};
@@ -73,9 +76,7 @@ handle_call(_Request, _From, State) ->
     {reply, Reply, State}.
 
 do_register(Name, Pid, State) when is_pid(Pid) ->
-    io:format("Registering ~p~n", [Name]),
     maps:put(Name, Pid, State).
 
 do_unregister(Name, Pid, State) when is_pid(Pid) ->
-    io:format("Unregistering ~p~n", [Name]),
     maps:remove(Name, State).

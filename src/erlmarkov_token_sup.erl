@@ -7,23 +7,18 @@ start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 init([]) ->
-    RestartStrategy = simple_one_for_one,
-    MaxRestarts = 100,
-    MaxSecondsBetweenRestarts = 300,
-    SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+    SupFlags = #{strategy => simple_one_for_one,
+		intensity => 100,
+		period => 300},
 
-    Restart = permanent,
-    Shutdown = 2000,
-    Type = worker,
 
     Children = [#{id => erlmarkov_token,
 	       start => {erlmarkov_token, start_link, []},
-	       restart => Restart,
-	       shutdown => Shutdown,
-	       type => Type}],
+	       restart => permanent,
+	       shutdown => 5000,
+	       type => worker}],
     Result = {SupFlags, Children},
-
-    io:format("Started erlmarkov_token_sup (~p)~n", [self()]),
+    io:format("Started ~p (~p)~n", [?MODULE, self()]),
     {ok, Result}.
 
 start_child(Token) ->

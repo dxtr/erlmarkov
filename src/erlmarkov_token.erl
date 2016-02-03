@@ -7,11 +7,9 @@
 	 handle_cast/2,
 	 handle_info/2,
 	 add_chain/1,
-	 start_link/1,
-	 get_chain/0,
-	 get_chain/1]).
+	 start_link/1]).
 
--record(state, {token,
+-record(state, {token :: term(),
 		weight = 0 :: integer(),
 		suffix = [] :: [{term(), integer()}]}).
 
@@ -20,7 +18,7 @@ start_link(Token) ->
 
 init([Token]) ->
     State = #state{token = Token},
-    gen_server:cast(whereis(erlmarkov_proc_registry),
+    gen_server:cast(erlmarkov_proc_registry,
 		    {register, Token, self()}),
     {ok, State}.
 
@@ -52,37 +50,6 @@ add_chain([Token|Suffix]) ->
 add_chain([]) ->
     ok.
 
-get_random_token() ->
-    TokenProcMap = erlmarkov_proc_registry:dump_state(),
-    TokenProcList = maps:keys(TokenProcMap),
-    TokenCount = length(TokenProcList),
-    Rand = rand:uniform(TokenCount),
-    lists:nth(Rand, TokenProcList).
-
-token_separator() -> " ".
-
-%% Function to get a random chain
-get_chain() ->
-    Token = get_random_token(),
-    get_chain(Token).
-
-get_chain(Start) ->
-    get_chain(Start, []).
-
-get_chain([], Accum) ->
-    lists:flatten(Accum);
-get_chain(Start, Accum) ->
-    case erlmarkov_proc_registry:get_pid(Start) of
-	undefined ->
-	    io:format("Could not find process for ~p~n", [Start]);
-	Proc ->
-	    NextToken = gen_server:call(Proc, {next_token}),
-	    A = if Accum =:= [] -> [Start];
-		   true -> [Accum, token_separator(), Start]
-		end,
-	    get_chain(NextToken, A)
-    end.    
-
 next_token(#state{weight = Weight, suffix = Suffix} = _State) ->
     Rand = rand:uniform(Weight),
     next_token(Suffix, Rand).
@@ -113,7 +80,7 @@ register_token(Token) ->
     end.
 
 terminate(_Reason, #state{token = Token} = _State) ->
-    gen_server:cast(whereis(erlmarkov_proc_registry),
+    gen_server:cast(erlmarkov_proc_registry,
 			    {unregister, Token, self()}),
     ok.
 
@@ -130,12 +97,6 @@ handle_call({add_suffix_list, [Suffix]}, _From, State) ->
     {reply, Reply, NewState};
 handle_call({next_token}, _From, State) ->
     Reply = next_token(State),
-    {reply, Reply, State};
-handle_call({get_chain}, _From, State) ->
-    Reply = get_chain(),
-    {reply, Reply, State};
-handle_call({get_chain, Start}, _From, State) ->
-    Reply = get_chain(Start),
     {reply, Reply, State};
 handle_call({dump_state}, _From, State) ->
     {reply, State, State};
