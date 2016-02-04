@@ -2,7 +2,7 @@
 %% DO NOT CHANGE VSN FIELD MANUALLY!
 {application,erlmarkov,
              [{vsn,"20160204-105852-relflow"},
-              {description,"An OTP application"},
+              {description,"A markov chain generator"},
               {registered,[]},
               {mod,{erlmarkov_app,[]}},
               {applications,[kernel,stdlib]},
