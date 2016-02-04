@@ -7,7 +7,7 @@
               {mod,{erlmarkov_app,[]}},
               {applications,[kernel,stdlib]},
               {env,[]},
-              {modules,[erlmarkov_app, erlmarkov_token_sup, erlmarkov_generator_sup, erlmarkov_token, erlmarkov_generator, erlmarkov_proc_registry]},
+              {modules,[erlmarkov_app, erlmarkov_sup, erlmarkov_token_sup, erlmarkov_generator_sup, erlmarkov_token, erlmarkov_generator, erlmarkov_proc_registry]},
               {contributors,[]},
               {licenses,["ISC"]},
               {links,[]}]}.
